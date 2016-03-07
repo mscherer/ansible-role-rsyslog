@@ -1,0 +1,12 @@
+---
+- set_fact: log_dir=/srv/logs/ rsyslog_user=rsyslogd
+
+- set_fact: syslog_config=listen_tls.conf
+
+- user: system=yes name=rsyslogd comment="Rsyslogd user, ansible created"
+
+# TODO selinux rules
+# change ownership of the storage 
+- file: path={{ log_dir }} state=directory mode=0750 owner={{ rsyslog_user }} setype=var_log_t
+
+- firewalld: port=514/tcp permanent=true state=enabled immediate=true
