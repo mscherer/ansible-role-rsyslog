@@ -1,10 +1,15 @@
 ---
-- yum: state=installed name={{ item }}
+- package:
+    state: present
+    name: "{{ item }}"
   with_items:
   - rsyslog-gnutls
   - rsyslog
 
-- set_fact: cert_file=/etc/pki/rsyslog/{{ ansible_fqdn }}.crt key_file=/etc/pki/rsyslog/{{ ansible_fqdn }}.key ca_file=/etc/ipa/ca.crt
+- set_fact:
+    cert_file: "/etc/pki/rsyslog/{{ ansible_fqdn }}.crt"
+    key_file: "/etc/pki/rsyslog/{{ ansible_fqdn }}.key"
+    ca_file: "/etc/ipa/ca.crt"
 
 # to make it unattended, please make sure to use host/server.example.org (case matter)
 - command: creates={{ key_file }} ipa-getcert request -f {{ cert_file }} -k {{ key_file }} -D {{ ansible_fqdn }} -K host/{{ ansible_fqdn }}
@@ -15,7 +20,9 @@
 - include: server.yml
   when: syslog_server == ansible_fqdn
 
-- template: src={{ syslog_config }} dest=/etc/rsyslog.d/{{ syslog_config }}
+- template: 
+    src: "{{ syslog_config }}" 
+    dest: "/etc/rsyslog.d/{{ syslog_config }}"
   notify: restart rsyslog
 
 - service: state=started enabled=yes name=rsyslog
