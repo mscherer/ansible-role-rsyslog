@@ -1,5 +1,6 @@
 ---
-- package:
+- name: "Install rsyslog packages"
+  package:
     state: present
     name: "{{ item }}"
   with_items:
@@ -12,7 +13,8 @@
     ca_file: "/etc/ipa/ca.crt"
 
 # to make it unattended, please make sure to use host/server.example.org (case matter)
-- command: creates={{ key_file }} ipa-getcert request -f {{ cert_file }} -k {{ key_file }} -D {{ ansible_fqdn }} -K host/{{ ansible_fqdn }}
+- name: "Request the certificate to IPA"
+  command: creates={{ key_file }} ipa-getcert request -f {{ cert_file }} -k {{ key_file }} -D {{ ansible_fqdn }} -K host/{{ ansible_fqdn }}
 
 - include: client.yml
   when: syslog_server != ansible_fqdn
@@ -20,9 +22,14 @@
 - include: server.yml
   when: syslog_server == ansible_fqdn
 
-- template: 
-    src: "{{ syslog_config }}" 
+- name: "Deploy rsyslog configuration"
+  template:
+    src: "{{ syslog_config }}"
     dest: "/etc/rsyslog.d/{{ syslog_config }}"
   notify: restart rsyslog
 
-- service: state=started enabled=yes name=rsyslog
+- name: "Make sure rsyslog is started"
+  service:
+    state: "started"
+    enabled: True
+    name: "rsyslog"
