@@ -1,2 +1,3 @@
 ---
-- set_fact: syslog_config=export_to_central.conf
+- set_fact:
+    syslog_config: "export_to_central.conf"
